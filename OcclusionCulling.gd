@@ -22,7 +22,10 @@ func _ready():
 func _physics_process(delta):
 	if reOcclude > 1.0/scans_per_second:
 		for i in occ_cull_meshes.size():
-			if !occ_cull_meshes[i] is MeshInstance:
+			var freeCheck = weakref(occ_cull_meshes[i])
+			if (!freeCheck.get_ref()):
+				_set_occlusion_group(cull_group)
+			elif !occ_cull_meshes[i] is MeshInstance:
 				var cur_children = occ_cull_meshes[i].get_children()
 				for child in cur_children.size():
 					if cur_children[child] is MeshInstance:
@@ -68,8 +71,11 @@ func _process(delta):
 	pass
 
 func _set_occlusion_group(group):
-	occ_cull_meshes = get_tree().get_nodes_in_group(group)
-	cull_group = group
+	if group == null:
+		occ_cull_meshes = get_tree().get_nodes_in_group(cull_group)
+	else:
+		occ_cull_meshes = get_tree().get_nodes_in_group(group)
+		cull_group = group
 	pass
 
 func _set_occlusion_accuracy(value):
